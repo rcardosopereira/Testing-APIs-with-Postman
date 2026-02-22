@@ -1,0 +1,326 @@
+{
+  "info": {
+    "_postman_id": "c0907b6b-6638-4252-a166-7c35d60b7ca5",
+    "name": "Reqres",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "6438984"
+  },
+  "item": [
+    {
+      "name": "Login (extract token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response has 'token' property\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property('token');\r",
+              "    pm.environment.set('token', jsonData.token);\r",
+              "    console.log('token value is ; ', jsonData.token)\r",
+              "    console.log('token value is ; ', pm.environment.get('token'))\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Compute current local timestamp and store in env var 'time now' as mm-DD-yyyy HH:MM:SS\r",
+              "\r",
+              "(function (){\r",
+              "    const pad = (n) => String(n).padStart(2, '0');\r",
+              "    const d = new Date();\r",
+              "    const month = pad(d.getMonth()+1);      //mm\r",
+              "    const day = pad(d.getDate());           //DD\r",
+              "    const year = d.getFullYear();           //yyyy\r",
+              "    const hours = pad(d.getHours());        //HH (24h)\r",
+              "    const minutes = pad(d.getMinutes());    //mm\r",
+              "    const seconds = pad(d.getSeconds());    //ss\r",
+              "    const formatted = `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;\r",
+              "    pm.environment.set('time now', formatted);\r",
+              "    console.log(\"Pre-req: time now =\", pm.environment.get('time now'));\r",
+              "    //const current_timestamp = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;\r",
+              "    //pm.environment.set(\"current_timestamp\", current_timestamp);\r",
+              "\r",
+              "})();"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "reqres_26dd3bb118024ed392850746b56e1749",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"eve.holt@reqres.in\", \r\n    \"password\": \"cityslicka\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response is valid JSON and contains 'id'\", function(){\r",
+              "    let body;\r",
+              "    try{\r",
+              "        body = pm.response.json();\r",
+              "    } catch (e) {\r",
+              "        pm.expect.fail(\"Response is not valid JSON: \" + e.message);\r",
+              "    }\r",
+              "\r",
+              "pm.expect(body).to.be.an('object');\r",
+              "pm.expect(body, \"Response body should have 'id'\").to.have.property('id');\r",
+              "\r",
+              "const idVal = body.id;\r",
+              "    pm.environment.set(\"userId\", String(idVal));\r",
+              "    console.log(\"userId set to:\", pm.environment.get(\"userId\"));\r",
+              "\r",
+              "    // Basic sanity check for common create responses\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "reqres_26dd3bb118024ed392850746b56e1749",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Rafael\", \r\n    \"job\": \"QA Engineer\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "reqres_26dd3bb118024ed392850746b56e1749",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Maria\",\r\n    \"job\": \"Manager\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "reqres_26dd3bb118024ed392850746b56e1749",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "reqres_26dd3bb118024ed392850746b56e1749",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            ""
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
